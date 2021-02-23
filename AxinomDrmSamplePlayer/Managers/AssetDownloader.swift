@@ -178,6 +178,39 @@ class AssetDownloader: NSObject, AVAssetDownloadDelegate  {
         
         task?.cancel()
     }
+    
+    // Return the display names for the media selection options that are currently selected in the specified group
+    func displayNamesForSelectedMediaOptions(_ mediaSelection: AVMediaSelection) -> String {
+        
+        var displayNames = ""
+        
+        guard let asset = mediaSelection.asset else {
+            return displayNames
+        }
+        
+        // Iterate over every media characteristic in the asset in which a media selection option is available.
+        for mediaCharacteristic in asset.availableMediaCharacteristicsWithMediaSelectionOptions {
+            /*
+             Obtain the AVMediaSelectionGroup object that contains one or more options with the
+             specified media characteristic, then get the media selection option that's currently
+             selected in the specified group.
+             */
+            guard let mediaSelectionGroup =
+                asset.mediaSelectionGroup(forMediaCharacteristic: mediaCharacteristic),
+                let option = mediaSelection.selectedMediaOption(in: mediaSelectionGroup) else { continue }
+            
+            // Obtain the display string for the media selection option.
+            if displayNames.isEmpty {
+                displayNames += " " + option.displayName
+            } else {
+                displayNames += ", " + option.displayName
+            }
+        }
+        
+        return displayNames
+    }
+    
+    // MARK: URLSessionTaskDelegate
 
     // Tells the delegate that the task finished transferring data
     func urlSession(_ session: URLSession, task: URLSessionTask, didCompleteWithError error: Error?) {
@@ -247,7 +280,9 @@ class AssetDownloader: NSObject, AVAssetDownloadDelegate  {
         NotificationCenter.default.post(name: .AssetDownloadStateChanged, object: nil, userInfo: userInfo)
     }
     
-    // Method called when the an aggregate download task determines the location this asset will be downloaded to
+    // MARK: AVAssetDownloadDelegate
+    
+    // Asks the delegate for the location this asset will be downloaded to
     func urlSession(_ session: URLSession, aggregateAssetDownloadTask: AVAggregateAssetDownloadTask,
                     willDownloadTo location: URL) {
         
@@ -262,7 +297,7 @@ class AssetDownloader: NSObject, AVAssetDownloadDelegate  {
         willDownloadToUrlMap[aggregateAssetDownloadTask] = location
     }
     
-    // Method called when a child AVAssetDownloadTask completes
+    // Method called when a child AVAssetDownloadTask completes for each media selection.
     func urlSession(_ session: URLSession, aggregateAssetDownloadTask: AVAggregateAssetDownloadTask,
                     didCompleteFor mediaSelection: AVMediaSelection) {
         
@@ -288,36 +323,5 @@ class AssetDownloader: NSObject, AVAssetDownloadDelegate  {
         userInfo[Asset.Keys.percentDownloaded] = percentComplete
         
         NotificationCenter.default.post(name: .AssetDownloadProgress, object: nil, userInfo: userInfo)
-    }
-    
-    // Return the display names for the media selection options that are currently selected in the specified group
-    func displayNamesForSelectedMediaOptions(_ mediaSelection: AVMediaSelection) -> String {
-        
-        var displayNames = ""
-        
-        guard let asset = mediaSelection.asset else {
-            return displayNames
-        }
-        
-        // Iterate over every media characteristic in the asset in which a media selection option is available.
-        for mediaCharacteristic in asset.availableMediaCharacteristicsWithMediaSelectionOptions {
-            /*
-             Obtain the AVMediaSelectionGroup object that contains one or more options with the
-             specified media characteristic, then get the media selection option that's currently
-             selected in the specified group.
-             */
-            guard let mediaSelectionGroup =
-                asset.mediaSelectionGroup(forMediaCharacteristic: mediaCharacteristic),
-                let option = mediaSelection.selectedMediaOption(in: mediaSelectionGroup) else { continue }
-            
-            // Obtain the display string for the media selection option.
-            if displayNames.isEmpty {
-                displayNames += " " + option.displayName
-            } else {
-                displayNames += ", " + option.displayName
-            }
-        }
-        
-        return displayNames
     }
 }

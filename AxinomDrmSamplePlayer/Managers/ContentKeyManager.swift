@@ -80,8 +80,8 @@ class ContentKeyManager: NSObject, AVContentKeySessionDelegate {
     // MARK: Online key retrival
     
     /*
-    The following delegate callback gets called when the client initiates a key request or AVFoundation
-    determines that the content is encrypted based on the playlist the client provided when it requests playback.
+     The following delegate callback gets called when the client initiates a key request or AVFoundation
+     determines that the content is encrypted based on the playlist the client provided when it requests playback.
     */
     func contentKeySession(_ session: AVContentKeySession, didProvide keyRequest: AVContentKeyRequest) {
         self.postToConsole("Content is encrypted. Initiating key request")
@@ -112,76 +112,47 @@ class ContentKeyManager: NSObject, AVContentKeySessionDelegate {
             }
         }
         
+        /*
+         Parse ContentId from keyRequest and capture everything after "sdk://"
+        */
         guard let contentKeyIdentifierString = keyRequest.identifier as? String,
-              // Removing "skd://" from #EXT-X-SESSION-KEY "URI" parameter
-              let contentIdentifier = contentKeyIdentifierString.replacingOccurrences(of: "skd://", with: "") as String?,
-              let contentIdentifierData = contentIdentifier.data(using: .utf8) else {
-                   postToConsole("ERROR: Failed to retrieve the contentIdentifier from the keyRequest!")
-                   return
+        /*
+          Capture everything after "sdk://" from #EXT-X-SESSION-KEY "URI" parameter.
+        */
+        let contentIdentifier = contentKeyIdentifierString.replacingOccurrences(of: "skd://", with: "") as String?,
+        
+        /*
+          Convert contentIdentifier to Unicode string (utf8)
+        */
+        let contentIdentifierData = contentIdentifier.data(using: .utf8) else {
+           postToConsole("ERROR: Failed to retrieve the contentIdentifier from the keyRequest!")
+           return
         }
 
+        /*
+         Console output
+        */
         let contentKeyIdAndIv = """
         - Content Key ID: \(contentIdentifier.components(separatedBy: ":")[0]) \n \
         - IV(Initialization Vector): \(contentIdentifier.components(separatedBy: ":")[1]) \n
         """
         
-        asset.contentKeyId = contentKeyIdentifierString
-        
         postToConsole("Key request info:\n \(contentKeyIdAndIv)")
         
-        let provideOnlinekey: () -> Void = { () -> Void in
-            do {
-                let completionHandler = { [weak self] (spcData: Data?, error: Error?) in
-                    guard let strongSelf = self else { return }
-                        if let error = error {
-                            strongSelf.postToConsole("ERROR: Failed to prepare SPC: \(error)")
-                            /*
-                             Report error to AVFoundation.
-                            */
-                            keyRequest.processContentKeyResponseError(error)
-                            return
-                        }
+        /*
+         Save Content Key Identifier String to initiate persisting content key loading process associated with the asset if needed.
+        */
+        asset.contentKeyId = contentKeyIdentifierString
 
-                        guard let spcData = spcData else { return }
-
-                        do {
-                            strongSelf.postToConsole("Will use SPC (Server Playback Context) to request CKC (Content Key Context) from KSM (Key Security Module)")
-                            /*
-                             Send SPC to Key Server and obtain CKC.
-                            */
-                            let ckcData = try strongSelf.requestContentKeyFromKeySecurityModule(spcData: spcData)
-
-                            strongSelf.postToConsole("Creating Content Key Response from CKC obtaned from Key Server")
-                            /*
-                             AVContentKeyResponse is used to represent the data returned from the key server when requesting a key for
-                             decrypting content.
-                             */
-                            let keyResponse = AVContentKeyResponse(fairPlayStreamingKeyResponseData: ckcData)
-
-                            strongSelf.postToConsole("Providing Content Key Response to make protected content available for processing: \(keyResponse)")
-                            /*
-                             Provide the content key response to make protected content available for processing.
-                            */
-                            keyRequest.processContentKeyResponse(keyResponse)
-                        } catch {
-                            strongSelf.postToConsole("Failed to make protected content available for processing: \(error)")
-                            /*
-                             Report error to AVFoundation.
-                            */
-                            keyRequest.processContentKeyResponseError(error)
-                        }
-                    }
-
-                    self.postToConsole("Will prepare SPC (Server Playback Context)")
-                
-                    keyRequest.makeStreamingContentKeyRequestData(forApp: self.fpsCertificate,
-                                                                  contentIdentifier: contentIdentifierData,
-                                                                  options: [AVContentKeyRequestProtocolVersionsKey: [1]],
-                                                                  completionHandler: completionHandler)
-            }
-        }
-        
-        if downloadRequestedByUser || persistableContentKeyExistsOnDisk(withAssetName: asset.name)  {
+        /*
+         When you receive an AVContentKeyRequest via -contentKeySession:didProvideContentKeyRequest:
+         and you want the resulting key response to produce a key that can persist across multiple
+         playback sessions, you must invoke -respondByRequestingPersistableContentKeyRequest on that
+         AVContentKeyRequest in order to signal that you want to process an AVPersistableContentKeyRequest
+         instead. If the underlying protocol supports persistable content keys, in response your
+         delegate will receive an AVPersistableContentKeyRequest via -contentKeySession:didProvidePersistableContentKeyRequest:.
+        */
+        if downloadRequestedByUser || persistableContentKeyExistsOnDisk(withAssetName: asset.name ) {
             /*
              Request a Persistable Key Request.
             */
@@ -195,30 +166,88 @@ class ContentKeyManager: NSObject, AVContentKeySessionDelegate {
                 This case will occur when the client gets a key loading request from an AirPlay Session.
                 You should answer the key request using an online key from your key server.
                 */
-                provideOnlinekey()
+                provideOnlineKey(withKeyRequest: keyRequest, contentIdentifier: contentIdentifierData)
             }
-            
             return
         }
         
-        provideOnlinekey()
+        provideOnlineKey(withKeyRequest: keyRequest, contentIdentifier: contentIdentifierData)
+    }
+    
+    
+    func provideOnlineKey(withKeyRequest keyRequest: AVContentKeyRequest, contentIdentifier contentIdentifierData: Data) {
+        
+        /*
+         Completion handler for makeStreamingContentKeyRequestData method.
+         1. Sends obtained SPC to Key Server
+         2. Receives CKC from Key Server
+         3. Makes content key response object (AVContentKeyResponse)
+         4. Provide the content key response object to make protected content available for processing
+        */
+        let getCkcAndMakeContentAvailable = { [weak self] (spcData: Data?, error: Error?) in
+            guard let strongSelf = self else { return }
+            
+            if let error = error {
+                strongSelf.postToConsole("ERROR: Failed to prepare SPC: \(error)")
+                /*
+                 Obtaining a content key response has failed.
+                 Report error to AVFoundation.
+                */
+                keyRequest.processContentKeyResponseError(error)
+                return
+            }
+
+            guard let spcData = spcData else { return }
+
+            do {
+                strongSelf.postToConsole("Will use SPC (Server Playback Context) to request CKC (Content Key Context) from KSM (Key Security Module)")
+                
+                /*
+                 Send SPC to Key Server and obtain CKC.
+                */
+                let ckcData = try strongSelf.requestContentKeyFromKeySecurityModule(spcData: spcData)
+
+                strongSelf.postToConsole("Creating Content Key Response from CKC obtaned from Key Server")
+                
+                /*
+                 AVContentKeyResponse is used to represent the data returned from the key server when requesting a key for
+                 decrypting content.
+                 */
+                let keyResponse = AVContentKeyResponse(fairPlayStreamingKeyResponseData: ckcData)
+
+                strongSelf.postToConsole("Providing Content Key Response to make protected content available for processing: \(keyResponse)")
+                
+                /*
+                 Provide the content key response to make protected content available for processing.
+                */
+                keyRequest.processContentKeyResponse(keyResponse)
+            } catch {
+                strongSelf.postToConsole("Failed to make protected content available for processing: \(error)")
+                
+                /*
+                 Report error to AVFoundation.
+                */
+                keyRequest.processContentKeyResponseError(error)
+            }
+        }
+
+        self.postToConsole("Will prepare content key request SPC (Server Playback Context)")
+
+        /*
+         Pass Content Id unicode string together with FPS Certificate to obtain a SPC for a specific combination of application and content.
+        */
+        keyRequest.makeStreamingContentKeyRequestData(forApp: self.fpsCertificate,
+                                                      contentIdentifier: contentIdentifierData,
+                                                      options: [AVContentKeyRequestProtocolVersionsKey: [1]],
+                                                      completionHandler: getCkcAndMakeContentAvailable)
+            
     }
     
     // MARK: Offline key retrival
     
-    // Preloads the content key associated with an Asset for persisting on disk.
-    //
-    // It is recommended you use AVContentKeySession to initiate the key loading process
-    // for online keys too. Key loading time can be a significant portion of your playback
-    // startup time because applications normally load keys when they receive an on-demand
-    // key request. You can improve the playback startup experience for your users if you
-    // load keys even before the user has picked something to play. AVContentKeySession allows
-    // you to initiate a key loading process and then use the key request you get to load the
-    // keys independent of the playback session. This is called key preloading. After loading
-    // the keys you can request playback, so during playback you don't have to load any keys,
-    // and the playback decryption can start immediately.
-    //
-    // - Parameter asset: The `Asset` to preload keys for.
+    /*
+     Initiates content key loading process associated with an Asset for persisting on disk.
+    */
     func requestPersistableContentKeys(forAsset asset: Asset) {
         self.postToConsole("Initiating Persistable Key Request for key identifier: \(String(describing: asset.contentKeyId))")
         
@@ -228,18 +257,23 @@ class ContentKeyManager: NSObject, AVContentKeySessionDelegate {
     /*
      The following delegate callback gets called when the client initiates a key request or AVFoundation
      determines that the content is encrypted based on the playlist the client provided when it requests playback.
-     */
+    */
     func contentKeySession(_ session: AVContentKeySession, didProvide keyRequest: AVPersistableContentKeyRequest) {
         self.postToConsole("Initiating persistable key request")
         handlePersistableContentKeyRequest(keyRequest: keyRequest)
     }
         
-    // Handles responding to an `AVPersistableContentKeyRequest` by determining if a key is already available for use on disk.
-    // If no key is available on disk, a persistable key is requested from the server and securely written to disk for use in the future.
-    // In both cases, the resulting content key is used as a response for the `AVPersistableContentKeyRequest`.
-    //
-    // - Parameter keyRequest: The `AVPersistableContentKeyRequest` to respond to.
+    /*
+     Handles responding to an `AVPersistableContentKeyRequest` by determining if a key is already available for use on disk.
+     If no key is available on disk, a persistable key is requested from the server and securely written to disk for use in the future.
+     In both cases, the resulting content key is used as a response for the `AVPersistableContentKeyRequest`.
+    
+     - Parameter keyRequest: The `AVPersistableContentKeyRequest` to respond to.
+    */
     func handlePersistableContentKeyRequest(keyRequest: AVPersistableContentKeyRequest) {
+        /*
+         Request Application Certificate
+        */
         if self.fpsCertificate == nil {
             self.postToConsole("Application Certificate missing, will request")
             
@@ -252,31 +286,53 @@ class ContentKeyManager: NSObject, AVContentKeySessionDelegate {
             }
         }
         
+        /*
+         Parse ContentId from keyRequest and capture everything after "sdk://"
+        */
         guard let contentKeyIdentifierString = keyRequest.identifier as? String,
-              // Removing "skd://" from #EXT-X-SESSION-KEY "URI" parameter
-              let contentIdentifier = contentKeyIdentifierString.replacingOccurrences(of: "skd://", with: "") as String?,
-              let contentIdentifierData = contentIdentifier.data(using: .utf8) else {
-                   postToConsole("ERROR: Failed to retrieve the contentIdentifier from the keyRequest!")
-                   return
+              
+        /*
+         Capture everything after "sdk://" from #EXT-X-SESSION-KEY "URI" parameter.
+        */
+        let contentIdentifier = contentKeyIdentifierString.replacingOccurrences(of: "skd://", with: "") as String?,
+
+        /*
+         Convert contentIdentifier to Unicode string (utf8)
+        */
+        let contentIdentifierData = contentIdentifier.data(using: .utf8) else {
+           postToConsole("ERROR: Failed to retrieve the contentIdentifier from the keyRequest!")
+           return
         }
         
+        /*
+         Console output
+        */
         let contentKeyIdAndIv = """
         - Content Key ID: \(contentIdentifier.components(separatedBy: ":")[0]) \n \
         - IV(Initialization Vector): \(contentIdentifier.components(separatedBy: ":")[1]) \n
         """
-        
-        asset.contentKeyId = contentKeyIdentifierString
-        
         postToConsole("Key request info:\n \(contentKeyIdAndIv)")
         
-        
+        /*
+         Save Content Key Identifier String to initiate persisting content key loading process associated with the asset if needed.
+        */
+        asset.contentKeyId = contentKeyIdentifierString
 
+        /*
+         Completion handler for makeStreamingContentKeyRequestData method.
+         1. Sends obtained SPC to Key Server
+         2. Receives CKC from Key Server
+         3. Obtains persistable content key
+         4. Writes persistable content key to disk
+         5. Makes content key response object (AVContentKeyResponse)
+         4. Provide the content key response object to make protected content available for processing
+        */
         let completionHandler = { [weak self] (spcData: Data?, error: Error?) in
             guard let strongSelf = self else { return }
             if let error = error {
                 /*
                  Report error to AVFoundation.
-                 */
+                */
                 keyRequest.processContentKeyResponseError(error)
                 
                 strongSelf.downloadRequestedByUser = false
@@ -289,29 +345,37 @@ class ContentKeyManager: NSObject, AVContentKeySessionDelegate {
                 strongSelf.postToConsole("Will use SPC (Server Playback Context) to request CKC (Content Key Context) from KSM (Key Security Module)")
                 /*
                  Send SPC to Key Server and obtain CKC
-                 */
+                */
                 let ckcData = try strongSelf.requestContentKeyFromKeySecurityModule(spcData: spcData)
                 
+                strongSelf.postToConsole("Creating Content Key Response from CKC obtaned from Key Server")
+                
+                /*
+                 Obtains a persistable content key from a context (CKC)
+                */
                 let persistentKey = try keyRequest.persistableContentKey(fromKeyVendorResponse: ckcData, options: nil)
                 
-                strongSelf.postToConsole("Will write persistable content key to disk")
+                strongSelf.postToConsole("Persistable Content Key was obtained from a context (CKC)")
                 
+                /*
+                 Writes out a persistable content key to disk
+                */
                 try strongSelf.writePersistableContentKey(contentKey: persistentKey, withAssetName: strongSelf.asset.name)
+                
+                strongSelf.postToConsole("Wrote persistable content key to disk")
                 
                 /*
                  AVContentKeyResponse is used to represent the data returned from the key server when requesting a key for
                  decrypting content.
-                 */
-                strongSelf.postToConsole("Creating Content Key Response from CKC obtaned from Key Server")
-                
+                */
                 let keyResponse = AVContentKeyResponse(fairPlayStreamingKeyResponseData: persistentKey)
-                
-                strongSelf.postToConsole("Providing Content Key Response to make protected content available for processing: \(keyResponse)")
                 
                 /*
                  Provide the content key response to make protected content available for processing.
-                 */
+                */
                 keyRequest.processContentKeyResponse(keyResponse)
+                
+                strongSelf.postToConsole("Providing Content Key Response to make protected content available for processing: \(keyResponse)")
                 
                 NotificationCenter.default.post(name: .HasAvailablePersistableContentKey, object: nil, userInfo: nil)
        
@@ -328,7 +392,9 @@ class ContentKeyManager: NSObject, AVContentKeySessionDelegate {
             }
         }
         
-        // Check to see if we can satisfy this key request using a saved persistent key file.
+        /*
+         Check to see if we can satisfy this key request using a saved persistent key file.
+        */
         if persistableContentKeyExistsOnDisk(withAssetName: asset.name) {
             
             postToConsole("Presistable key already exists on disk")
@@ -342,7 +408,7 @@ class ContentKeyManager: NSObject, AVContentKeySessionDelegate {
                 /*
                  Key requests should never be left dangling.
                  Attempt to create a new persistable key.
-                 */
+                */
                 keyRequest.makeStreamingContentKeyRequestData(forApp: self.fpsCertificate,
                                                               contentIdentifier: contentIdentifierData,
                                                               options: [AVContentKeyRequestProtocolVersionsKey: [1]],
@@ -397,7 +463,7 @@ class ContentKeyManager: NSObject, AVContentKeySessionDelegate {
      asks you to start playback of the content, you will get a key request and would use this persistent
      key to answer the key request. At that point, you will get sent an updated persistent key which
      is set to expire at the end of playback experiment which is 24 hours in this example.
-     */
+    */
     func contentKeySession(_ session: AVContentKeySession,
                            didUpdatePersistableContentKey persistableContentKey: Data,
                            forContentKeyIdentifier keyIdentifier: Any) {
@@ -521,6 +587,9 @@ class ContentKeyManager: NSObject, AVContentKeySessionDelegate {
             throw ProgramError.missingLicensingServiceUrl
         }
         
+        /*
+         Before sending a SPC to Key Server (KSM) we need to set provided Licensing Token to "X-AxDRM-Message" HTTP header.
+        */
         var ksmRequest = URLRequest(url: url)
         ksmRequest.httpMethod = "POST"
         ksmRequest.setValue(licensingToken, forHTTPHeaderField: "X-AxDRM-Message")

@@ -26,9 +26,9 @@ class Asset {
         createUrlAsset()
     }
     
-    // Adds AVURLAsset as a recepient to the Playback Content Key Session
+    // Link AVURLAsset to Content Key Session
     func addAsContentKeyRecipient() {
-        print("Adding AVURLAsset as a recepient to the Playback Content Key Session")
+        print("Adding AVURLAsset as a recepient to the Content Key Session")
         ContentKeyManager.sharedManager.contentKeySession.addContentKeyRecipient(urlAsset)
     }
     
