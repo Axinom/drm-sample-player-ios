@@ -86,7 +86,7 @@ func contentKeySession(_ session: AVContentKeySession, didProvide keyRequest: AV
 }
 ```
  
-Received ```AVContentKeyRequest``` object will allow performing FairPlay streaming specific operations like creating SPC - Secure Playback Context (Content Key Request) and then sending it to a Key Server. For sake of simplicity we can name SPC a Content Key Request.
+Received ```AVContentKeyRequest``` object will allow performing FairPlay streaming specific operations like creating SPC - Server Playback Context (Content Key Request) and then sending it to a Key Server. For sake of simplicity we can name SPC a Content Key Request.
  
 ### 2. App requests for a Content Key Request (SPC) from AVFoundation.
  
@@ -175,7 +175,7 @@ func contentKeySession(_ session: AVContentKeySession, didProvide keyRequest: AV
 }
 ```
  
-Received AVPersistableContentKeyRequest object will allow performing FairPlay streaming specific operations like creating SPC - Secure Playback Context (Content Key Request) and sending it to a Key Server.
+Received AVPersistableContentKeyRequest object will allow performing FairPlay streaming specific operations like creating SPC - Server Playback Context (Content Key Request) and sending it to a Key Server.
  
 ### 5-6. AVFoundation creates Persistable Content Key Request (SPC)
  

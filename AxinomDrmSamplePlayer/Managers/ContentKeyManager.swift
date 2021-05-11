@@ -3,6 +3,7 @@
 //
 //  The ContentKeyManager class configures the instance of AVContentKeySession to use for requesting content keys
 //  securely for playback or offline use.
+//
 
 import Foundation
 import AVFoundation
@@ -33,6 +34,9 @@ class ContentKeyManager: NSObject, AVContentKeySessionDelegate {
     // Certificate data
     fileprivate var fpsCertificate:Data!
     
+    // A set containing the currently pending content key identifiers associated with persistable content key requests that have not been completed.
+    var pendingPersistableContentKeyIdentifiers = Set<String>()
+        
     // The directory that is used to save persistable content keys
     lazy var contentKeyDirectory: URL = {
         guard let documentPath =
@@ -116,6 +120,7 @@ class ContentKeyManager: NSObject, AVContentKeySessionDelegate {
          Parse ContentId from keyRequest and capture everything after "sdk://"
         */
         guard let contentKeyIdentifierString = keyRequest.identifier as? String,
+              
         /*
           Capture everything after "sdk://" from #EXT-X-SESSION-KEY "URI" parameter.
         */
@@ -129,12 +134,15 @@ class ContentKeyManager: NSObject, AVContentKeySessionDelegate {
            return
         }
 
+        let keyId = contentIdentifier.components(separatedBy: ":")[0]
+        let keyIV = contentIdentifier.components(separatedBy: ":")[1]
+        
         /*
          Console output
         */
         let contentKeyIdAndIv = """
-        - Content Key ID: \(contentIdentifier.components(separatedBy: ":")[0]) \n \
-        - IV(Initialization Vector): \(contentIdentifier.components(separatedBy: ":")[1]) \n
+        - Content Key ID: \(keyId) \n \
+        - IV(Initialization Vector): \(keyIV) \n
         """
         
         postToConsole("Key request info:\n \(contentKeyIdAndIv)")
@@ -142,8 +150,11 @@ class ContentKeyManager: NSObject, AVContentKeySessionDelegate {
         /*
          Save Content Key Identifier String to initiate persisting content key loading process associated with the asset if needed.
         */
-        asset.contentKeyId = contentKeyIdentifierString
-
+        
+        if !(asset.contentKeyIdList?.contains(contentKeyIdentifierString))! {
+            asset.contentKeyIdList?.append(contentKeyIdentifierString)
+        }
+        
         /*
          When you receive an AVContentKeyRequest via -contentKeySession:didProvideContentKeyRequest:
          and you want the resulting key response to produce a key that can persist across multiple
@@ -152,7 +163,7 @@ class ContentKeyManager: NSObject, AVContentKeySessionDelegate {
          instead. If the underlying protocol supports persistable content keys, in response your
          delegate will receive an AVPersistableContentKeyRequest via -contentKeySession:didProvidePersistableContentKeyRequest:.
         */
-        if downloadRequestedByUser || persistableContentKeyExistsOnDisk(withAssetName: asset.name ) {
+        if downloadRequestedByUser || persistableContentKeyExistsOnDisk(withAssetName: asset.name, withContentKeyIV: keyIV) || shouldRequestPersistableContentKey(withIdentifier: contentKeyIdentifierString) {
             /*
              Request a Persistable Key Request.
             */
@@ -174,8 +185,9 @@ class ContentKeyManager: NSObject, AVContentKeySessionDelegate {
         provideOnlineKey(withKeyRequest: keyRequest, contentIdentifier: contentIdentifierData)
     }
     
-    
     func provideOnlineKey(withKeyRequest keyRequest: AVContentKeyRequest, contentIdentifier contentIdentifierData: Data) {
+        
+        postToConsole("ONLINE KEY FLOW")
         
         /*
          Completion handler for makeStreamingContentKeyRequestData method.
@@ -234,7 +246,7 @@ class ContentKeyManager: NSObject, AVContentKeySessionDelegate {
         self.postToConsole("Will prepare content key request SPC (Server Playback Context)")
 
         /*
-         Pass Content Id unicode string together with FPS Certificate to obtain a SPC for a specific combination of application and content.
+         Pass Content Id unicode string together with FPS Certificate to obtain content key request data for a specific combination of application and content.
         */
         keyRequest.makeStreamingContentKeyRequestData(forApp: self.fpsCertificate,
                                                       contentIdentifier: contentIdentifierData,
@@ -249,9 +261,24 @@ class ContentKeyManager: NSObject, AVContentKeySessionDelegate {
      Initiates content key loading process associated with an Asset for persisting on disk.
     */
     func requestPersistableContentKeys(forAsset asset: Asset) {
-        self.postToConsole("Initiating Persistable Key Request for key identifier: \(String(describing: asset.contentKeyId))")
+        postToConsole("OFFLINE KEY FLOW")
         
-        contentKeySession.processContentKeyRequest(withIdentifier: asset.contentKeyId, initializationData: nil, options: nil)
+        for contentKeyId in asset.contentKeyIdList ?? [] {
+            postToConsole("Initiating Persistable Key Request for key identifier: \(String(describing: contentKeyId))")
+            
+            pendingPersistableContentKeyIdentifiers.insert(contentKeyId)
+            
+            contentKeySession.processContentKeyRequest(withIdentifier: contentKeyId, initializationData: nil, options: nil)
+        }
+    }
+    
+    /*
+      Returns whether or not a content key should be persistable on disk.
+      Parameter identifier: The asset ID associated with the content key request.
+      - Returns: `true` if the content key request should be persistable, `false` otherwise.
+    */
+    func shouldRequestPersistableContentKey(withIdentifier identifier: String) -> Bool {
+        return pendingPersistableContentKeyIdentifiers.contains(identifier)
     }
     
     /*
@@ -259,7 +286,8 @@ class ContentKeyManager: NSObject, AVContentKeySessionDelegate {
      determines that the content is encrypted based on the playlist the client provided when it requests playback.
     */
     func contentKeySession(_ session: AVContentKeySession, didProvide keyRequest: AVPersistableContentKeyRequest) {
-        self.postToConsole("Initiating persistable key request")
+        postToConsole("Initiating persistable key request")
+        
         handlePersistableContentKeyRequest(keyRequest: keyRequest)
     }
         
@@ -304,19 +332,24 @@ class ContentKeyManager: NSObject, AVContentKeySessionDelegate {
            return
         }
         
+        let keyId = contentIdentifier.components(separatedBy: ":")[0]
+        let keyIV = contentIdentifier.components(separatedBy: ":")[1]
+        
         /*
          Console output
         */
         let contentKeyIdAndIv = """
-        - Content Key ID: \(contentIdentifier.components(separatedBy: ":")[0]) \n \
-        - IV(Initialization Vector): \(contentIdentifier.components(separatedBy: ":")[1]) \n
+        - Content Key ID: \(keyId) \n \
+        - IV(Initialization Vector): \(keyIV) \n
         """
         postToConsole("Key request info:\n \(contentKeyIdAndIv)")
         
         /*
          Save Content Key Identifier String to initiate persisting content key loading process associated with the asset if needed.
         */
-        asset.contentKeyId = contentKeyIdentifierString
+        if !(asset.contentKeyIdList?.contains(contentKeyIdentifierString))! {
+            asset.contentKeyIdList?.append(contentKeyIdentifierString)
+        }
 
         /*
          Completion handler for makeStreamingContentKeyRequestData method.
@@ -335,6 +368,8 @@ class ContentKeyManager: NSObject, AVContentKeySessionDelegate {
                 */
                 keyRequest.processContentKeyResponseError(error)
                 
+                strongSelf.pendingPersistableContentKeyIdentifiers.remove(contentKeyIdentifierString)
+                
                 strongSelf.downloadRequestedByUser = false
                 return
             }
@@ -351,16 +386,16 @@ class ContentKeyManager: NSObject, AVContentKeySessionDelegate {
                 strongSelf.postToConsole("Creating Content Key Response from CKC obtaned from Key Server")
                 
                 /*
-                 Obtains a persistable content key from a context (CKC)
+                 Obtains a persistable content key from Content Key Context (CKC)
                 */
                 let persistentKey = try keyRequest.persistableContentKey(fromKeyVendorResponse: ckcData, options: nil)
                 
-                strongSelf.postToConsole("Persistable Content Key was obtained from a context (CKC)")
+                strongSelf.postToConsole("Persistable Content Key was obtained from Content Key Context (CKC)")
                 
                 /*
                  Writes out a persistable content key to disk
                 */
-                try strongSelf.writePersistableContentKey(contentKey: persistentKey, withAssetName: strongSelf.asset.name)
+                try strongSelf.writePersistableContentKey(contentKey: persistentKey, withAssetName: strongSelf.asset.name, withContentKeyIV: keyIV)
                 
                 strongSelf.postToConsole("Wrote persistable content key to disk")
                 
@@ -378,6 +413,8 @@ class ContentKeyManager: NSObject, AVContentKeySessionDelegate {
                 strongSelf.postToConsole("Providing Content Key Response to make protected content available for processing: \(keyResponse)")
                 
                 NotificationCenter.default.post(name: .HasAvailablePersistableContentKey, object: nil, userInfo: nil)
+                
+                strongSelf.pendingPersistableContentKeyIdentifiers.remove(contentKeyIdentifierString)
        
             } catch {
                 
@@ -388,6 +425,8 @@ class ContentKeyManager: NSObject, AVContentKeySessionDelegate {
                  */
                 keyRequest.processContentKeyResponseError(error)
                 
+                strongSelf.pendingPersistableContentKeyIdentifiers.remove(contentKeyIdentifierString)
+                
                 strongSelf.downloadRequestedByUser = false
             }
         }
@@ -395,19 +434,21 @@ class ContentKeyManager: NSObject, AVContentKeySessionDelegate {
         /*
          Check to see if we can satisfy this key request using a saved persistent key file.
         */
-        if persistableContentKeyExistsOnDisk(withAssetName: asset.name) {
+        if persistableContentKeyExistsOnDisk(withAssetName: asset.name, withContentKeyIV: keyIV) {
             
-            postToConsole("Presistable key already exists on disk")
+            let urlToPersistableKey = urlForPersistableContentKey(withAssetName: asset.name, withContentKeyIV: keyIV)
             
-            let urlToPersistableKey = urlForPersistableContentKey(withAssetName: asset.name)
+            postToConsole("Presistable key already exists on disk at location: \(urlToPersistableKey.path)")
             
             guard let contentKey = FileManager.default.contents(atPath: urlToPersistableKey.path) else {
                 downloadRequestedByUser = false
                 
+                pendingPersistableContentKeyIdentifiers.remove(contentKeyIdentifierString)
+                
                 postToConsole("Failed to locate Presistable key from disk. Attempting to create a new one")
+                
                 /*
-                 Key requests should never be left dangling.
-                 Attempt to create a new persistable key.
+                 Pass Content Id unicode string together with FPS Certificate to obtain content key request data for a specific combination of application and content.
                 */
                 keyRequest.makeStreamingContentKeyRequestData(forApp: self.fpsCertificate,
                                                               contentIdentifier: contentIdentifierData,
@@ -471,11 +512,26 @@ class ContentKeyManager: NSObject, AVContentKeySessionDelegate {
         postToConsole("Updating Persistable Content Key")
 
         do {
-            deletePeristableContentKey(withAssetName: asset.name)
+            /*
+             Parse ContentId from keyRequest and capture everything after "sdk://"
+            */
+            guard let contentKeyIdentifierString = keyIdentifier as? String,
+                  
+            /*
+              Capture everything after "sdk://" from #EXT-X-SESSION-KEY "URI" parameter.
+            */
+            let contentIdentifier = contentKeyIdentifierString.replacingOccurrences(of: "skd://", with: "") as String?
+            
+            else {
+               postToConsole("ERROR: Failed to retrieve the contentIdentifier")
+               return
+            }
+                        
+            deletePeristableContentKey(withAssetName: asset.name, withContentKeyId: contentIdentifier)
             
             postToConsole("Will write updated persistable content key to disk for \(asset.name)")
             
-            try writePersistableContentKey(contentKey: persistableContentKey, withAssetName: asset.name)
+            try writePersistableContentKey(contentKey: persistableContentKey, withAssetName: asset.name, withContentKeyIV: contentIdentifier.components(separatedBy: ":")[1])
         } catch {
             postToConsole("ERROR: Failed to write updated persistable content key to disk: \(error.localizedDescription)")
         }
@@ -487,19 +543,21 @@ class ContentKeyManager: NSObject, AVContentKeySessionDelegate {
     //   - contentKey: The data representation of the persistable content key.
     //   - assetName: The asset name.
     // - Throws: If an error occurs during the file write process.
-    func writePersistableContentKey(contentKey: Data, withAssetName assetName: String) throws {
+    func writePersistableContentKey(contentKey: Data, withAssetName assetName: String, withContentKeyIV keyIV: String) throws {
         
-        let fileURL = urlForPersistableContentKey(withAssetName: assetName)
+        let fileURL = urlForPersistableContentKey(withAssetName: assetName, withContentKeyIV: keyIV)
         
         try contentKey.write(to: fileURL, options: Data.WritingOptions.atomicWrite)
+        
+        postToConsole("Wrote persistable content key to disk for \(assetName) to location: \(fileURL)")
     }
     
     // Returns whether or not a persistable content key exists on disk for a given asset.
     //
     // - Parameter assetName: The asset name.
     // - Returns: `true` if the key exists on disk, `false` otherwise.
-    func persistableContentKeyExistsOnDisk(withAssetName assetName: String) -> Bool {
-        let contentKeyURL = urlForPersistableContentKey(withAssetName: assetName)
+    func persistableContentKeyExistsOnDisk(withAssetName assetName: String, withContentKeyIV keyIV: String) -> Bool {
+        let contentKeyURL = urlForPersistableContentKey(withAssetName: assetName, withContentKeyIV: keyIV)
         
         return FileManager.default.fileExists(atPath: contentKeyURL.path)
     }
@@ -508,29 +566,40 @@ class ContentKeyManager: NSObject, AVContentKeySessionDelegate {
     //
     // - Parameter assetName: The asset name.
     // - Returns: The fully resolved file URL.
-    func urlForPersistableContentKey(withAssetName assetName: String) -> URL {
-        return contentKeyDirectory.appendingPathComponent("\(assetName)-Key")
+    func urlForPersistableContentKey(withAssetName assetName: String, withContentKeyIV keyIV: String) -> URL {
+        return contentKeyDirectory.appendingPathComponent("\(assetName)-\(keyIV)-Key")
     }
     
     // Deletes a persistable key for a given content key identifier.
     //
     // - Parameter assetName: The asset name.
-    func deletePeristableContentKey(withAssetName assetName: String) {
-        if persistableContentKeyExistsOnDisk(withAssetName: assetName) {
-            postToConsole("Deleting content key for \(assetName): Persistable content key exists on disk")
-        } else {
-            postToConsole("Deleting content key for \(assetName): No persistable content key exists on disk")
+    func deletePeristableContentKey(withAssetName assetName: String, withContentKeyId keyId: String) {
+        
+        /*
+         Capture everything after "sdk://" from #EXT-X-SESSION-KEY "URI" parameter.
+        */
+        guard let contentIdentifier = keyId.replacingOccurrences(of: "skd://", with: "") as String? else {
+            postToConsole("ERROR: Failed to retrieve the contentIdentifier")
             return
         }
         
-        let contentKeyURL = urlForPersistableContentKey(withAssetName: assetName)
+        let keyIV = contentIdentifier.components(separatedBy: ":")[1]
+        
+        if persistableContentKeyExistsOnDisk(withAssetName: assetName, withContentKeyIV: keyIV) {
+            postToConsole("Deleting content key for \(assetName) - \(keyIV): Persistable content key exists on disk")
+        } else {
+            postToConsole("Deleting content key for \(assetName) - \(keyIV): No persistable content key exists on disk")
+            return
+        }
+        
+        let contentKeyURL = urlForPersistableContentKey(withAssetName: assetName, withContentKeyIV: keyIV)
         
         do {
             try FileManager.default.removeItem(at: contentKeyURL)
             
-            UserDefaults.standard.removeObject(forKey: "\(assetName)-Key")
+            UserDefaults.standard.removeObject(forKey: "\(assetName)-\(keyIV)-Key")
             
-            postToConsole("Presistable Key for \(assetName) was deleted")
+            postToConsole("Presistable Key for \(assetName)-\(keyIV) was deleted")
         } catch {
             print("An error occured removing the persisted content key: \(error)")
         }
@@ -575,6 +644,16 @@ class ContentKeyManager: NSObject, AVContentKeySessionDelegate {
             if let summary = summary {
                 self.postToConsole("FPS Certificate received, summary: \(summary)")
             }
+        }
+    }
+    
+    /*
+      Deletes all the persistable content keys on disk for a specific `Asset`.
+      - Parameter asset: The `Asset` value to remove keys for.
+    */
+    func deleteAllPeristableContentKeys(forAsset asset: Asset) {
+        for contentKeyId in asset.contentKeyIdList ?? [] {
+            deletePeristableContentKey(withAssetName: asset.name, withContentKeyId: contentKeyId)
         }
     }
     

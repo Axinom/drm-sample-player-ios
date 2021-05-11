@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		E60C651C25F8F243004441A7 /* LogManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = E60C651B25F8F243004441A7 /* LogManager.swift */; };
 		E6A64D8725669B540058D02E /* Notification.Name.swift in Sources */ = {isa = PBXBuildFile; fileRef = E63B6A3E2541B6DC0091B371 /* Notification.Name.swift */; };
 		E6A64D8825669B540058D02E /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = E6F43AA6247D0501000C1CF9 /* AppDelegate.swift */; };
 		E6A64D8925669B540058D02E /* Utils.swift in Sources */ = {isa = PBXBuildFile; fileRef = E63B6A3F2541B6DC0091B371 /* Utils.swift */; };
@@ -24,6 +25,7 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
+		E60C651B25F8F243004441A7 /* LogManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LogManager.swift; sourceTree = "<group>"; };
 		E63B6A392541B6D20091B371 /* AssetListTableViewCell.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = AssetListTableViewCell.swift; path = "AxinomDrmSamplePlayer/Assets Table/AssetListTableViewCell.swift"; sourceTree = SOURCE_ROOT; };
 		E63B6A3A2541B6D20091B371 /* AssetsViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = AssetsViewController.swift; path = "AxinomDrmSamplePlayer/Assets Table/AssetsViewController.swift"; sourceTree = SOURCE_ROOT; };
 		E63B6A3E2541B6DC0091B371 /* Notification.Name.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = Notification.Name.swift; path = "AxinomDrmSamplePlayer/Extensions + Utils/Notification.Name.swift"; sourceTree = SOURCE_ROOT; };
@@ -57,6 +59,7 @@
 			isa = PBXGroup;
 			children = (
 				E63B6A3E2541B6DC0091B371 /* Notification.Name.swift */,
+				E60C651B25F8F243004441A7 /* LogManager.swift */,
 				E63B6A3F2541B6DC0091B371 /* Utils.swift */,
 			);
 			name = "Extensions + Utils";
@@ -185,6 +188,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				E6A64D8725669B540058D02E /* Notification.Name.swift in Sources */,
+				E60C651C25F8F243004441A7 /* LogManager.swift in Sources */,
 				E6A64D8825669B540058D02E /* AppDelegate.swift in Sources */,
 				E6A64D8925669B540058D02E /* Utils.swift in Sources */,
 				E6A64D8A25669B540058D02E /* ContentKeyManager.swift in Sources */,
@@ -223,18 +227,18 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
-				CODE_SIGN_IDENTITY = "iPhone Distribution";
-				CODE_SIGN_STYLE = Manual;
-				DEVELOPMENT_TEAM = CTH75Q6ACC;
+				CODE_SIGN_IDENTITY = "Apple Development";
+				CODE_SIGN_STYLE = Automatic;
+				DEVELOPMENT_TEAM = 53T55F7D66;
 				INFOPLIST_FILE = AxinomDrmSamplePlayer/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 1.3;
-				PRODUCT_BUNDLE_IDENTIFIER = com.axinom.enterprise.vtb.AxinomDrmSamplePlayer;
+				MARKETING_VERSION = 1.4;
+				PRODUCT_BUNDLE_IDENTIFIER = com.axinom.vtb.AxinomDrmSamplePlayer;
 				PRODUCT_NAME = "$(TARGET_NAME)";
-				PROVISIONING_PROFILE_SPECIFIER = APP_CENTER_AxinomDrmSamplePlayer;
+				PROVISIONING_PROFILE_SPECIFIER = "";
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
 			};
@@ -244,18 +248,18 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
-				CODE_SIGN_IDENTITY = "iPhone Distribution";
-				CODE_SIGN_STYLE = Manual;
-				DEVELOPMENT_TEAM = CTH75Q6ACC;
+				CODE_SIGN_IDENTITY = "Apple Development";
+				CODE_SIGN_STYLE = Automatic;
+				DEVELOPMENT_TEAM = 53T55F7D66;
 				INFOPLIST_FILE = AxinomDrmSamplePlayer/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 1.3;
-				PRODUCT_BUNDLE_IDENTIFIER = com.axinom.enterprise.vtb.AxinomDrmSamplePlayer;
+				MARKETING_VERSION = 1.4;
+				PRODUCT_BUNDLE_IDENTIFIER = com.axinom.vtb.AxinomDrmSamplePlayer;
 				PRODUCT_NAME = "$(TARGET_NAME)";
-				PROVISIONING_PROFILE_SPECIFIER = APP_CENTER_AxinomDrmSamplePlayer;
+				PROVISIONING_PROFILE_SPECIFIER = "";
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
 			};

@@ -1,9 +1,7 @@
 //
-//  Utils.swift
-//  AxinomDrmSamplePlayer
-//
-//  Created by Oleg Ivanov on 23.09.2020.
 //  Copyright © 2020 Axinom. All rights reserved.
+//
+//  Utils
 //
 
 import Foundation

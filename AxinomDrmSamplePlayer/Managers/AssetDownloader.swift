@@ -4,6 +4,7 @@
 //  AssetDownloader demonstrates how to manage the downloading of HLS streams.
 //  It includes APIs for starting and canceling downloads,
 //  deleting existing assets of the user's device, and monitoring the download progress and status.
+//
 
 import Foundation
 import AVFoundation

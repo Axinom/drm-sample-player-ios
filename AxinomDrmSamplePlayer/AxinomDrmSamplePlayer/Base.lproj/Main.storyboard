@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="17156" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES" initialViewController="uCB-sU-1al">
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="18122" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES" initialViewController="uCB-sU-1al">
     <device id="retina6_1" orientation="landscape" appearance="light"/>
     <dependencies>
         <deployment identifier="iOS"/>
-        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="17126"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="18093"/>
         <capability name="Safe area layout guides" minToolsVersion="9.0"/>
         <capability name="System colors in document resources" minToolsVersion="11.0"/>
         <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
@@ -22,27 +22,27 @@
                                 <color key="backgroundColor" systemColor="systemBackgroundColor"/>
                                 <prototypes>
                                     <tableViewCell clipsSubviews="YES" contentMode="scaleToFill" selectionStyle="default" accessoryType="detailButton" indentationWidth="10" reuseIdentifier="AssetListTableViewCellIdentifier" rowHeight="74" id="SEL-pm-fXp" customClass="AssetListTableViewCell" customModule="AxinomDrmSamplePlayer" customModuleProvider="target">
-                                        <rect key="frame" x="0.0" y="28" width="808" height="74"/>
+                                        <rect key="frame" x="0.0" y="24.5" width="808" height="74"/>
                                         <autoresizingMask key="autoresizingMask"/>
                                         <tableViewCellContentView key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" tableViewCell="SEL-pm-fXp" id="BnE-Gq-1Xj">
-                                            <rect key="frame" x="0.0" y="0.0" width="764" height="74"/>
+                                            <rect key="frame" x="0.0" y="0.0" width="767.5" height="74"/>
                                             <autoresizingMask key="autoresizingMask"/>
                                             <subviews>
                                                 <stackView opaque="NO" contentMode="scaleToFill" axis="vertical" distribution="equalSpacing" spacing="8" translatesAutoresizingMaskIntoConstraints="NO" id="eQ5-wB-cbi">
-                                                    <rect key="frame" x="20" y="11" width="736" height="52"/>
+                                                    <rect key="frame" x="20" y="11" width="739.5" height="52"/>
                                                     <subviews>
                                                         <label opaque="NO" multipleTouchEnabled="YES" contentMode="left" text="Title" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="GZs-eq-Mg7">
-                                                            <rect key="frame" x="0.0" y="0.0" width="736" height="19.5"/>
+                                                            <rect key="frame" x="0.0" y="0.0" width="739.5" height="19.5"/>
                                                             <fontDescription key="fontDescription" type="system" pointSize="16"/>
                                                             <nil key="highlightedColor"/>
                                                         </label>
                                                         <label opaque="NO" multipleTouchEnabled="YES" contentMode="left" text="Subtitle" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="r6z-cV-7yA">
-                                                            <rect key="frame" x="0.0" y="38.5" width="736" height="13.5"/>
+                                                            <rect key="frame" x="0.0" y="38.5" width="739.5" height="13.5"/>
                                                             <fontDescription key="fontDescription" type="system" pointSize="11"/>
                                                             <nil key="highlightedColor"/>
                                                         </label>
                                                         <progressView hidden="YES" opaque="NO" userInteractionEnabled="NO" contentMode="scaleToFill" verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="jwM-qd-sJd">
-                                                            <rect key="frame" x="0.0" y="52" width="736" height="0.0"/>
+                                                            <rect key="frame" x="0.0" y="52" width="739.5" height="0.0"/>
                                                         </progressView>
                                                     </subviews>
                                                 </stackView>
@@ -98,6 +98,10 @@
                         <outlet property="consoleTextView" destination="7Ak-IP-0Ir" id="gXO-Ig-vzo"/>
                         <outlet property="copyConsoleButton" destination="cXa-lu-kTE" id="kdQ-Qk-h4w"/>
                         <outlet property="saveDeleteAssetButton" destination="iME-PI-uMV" id="CES-sd-qUG"/>
+                        <outlet property="showAllMessagesButton" destination="p4w-L4-PfE" id="mhp-i8-Qd6"/>
+                        <outlet property="showDownloadMessagesButton" destination="tbv-U8-RCs" id="yFp-L1-F0y"/>
+                        <outlet property="showKeyDeliveryMessagesButton" destination="HNG-u0-HO9" id="Drv-5w-LsA"/>
+                        <outlet property="showPlaybackMessagesButton" destination="cH6-fn-45w" id="nrU-6E-o6G"/>
                     </connections>
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="ilp-aX-q0W" userLabel="First Responder" customClass="UIResponder" sceneMemberID="firstResponder"/>
@@ -116,7 +120,7 @@
                             <textInputTraits key="textInputTraits" autocapitalizationType="sentences"/>
                         </textView>
                         <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="wordWrap" translatesAutoresizingMaskIntoConstraints="NO" id="9XJ-hN-bk9" userLabel="Console Toggle">
-                            <rect key="frame" x="111" y="0.0" width="60" height="47"/>
+                            <rect key="frame" x="106" y="0.0" width="65" height="47"/>
                             <color key="backgroundColor" red="0.13333454728126526" green="0.13333117961883545" blue="0.13333344459533691" alpha="1" colorSpace="custom" customColorSpace="displayP3"/>
                             <constraints>
                                 <constraint firstAttribute="height" relation="greaterThanOrEqual" constant="47" id="dQ9-Ce-Yxj"/>
@@ -131,33 +135,18 @@
                             </connections>
                         </button>
                         <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="wordWrap" translatesAutoresizingMaskIntoConstraints="NO" id="iME-PI-uMV" userLabel="Save/Delete Asset">
-                            <rect key="frame" x="111" y="346" width="60" height="47"/>
+                            <rect key="frame" x="106" y="346" width="65" height="47"/>
                             <color key="backgroundColor" red="0.13333454729999999" green="0.13333117959999999" blue="0.13333344459999999" alpha="1" colorSpace="custom" customColorSpace="displayP3"/>
                             <constraints>
                                 <constraint firstAttribute="height" relation="greaterThanOrEqual" constant="47" id="00g-9z-0Ri"/>
                                 <constraint firstAttribute="width" relation="greaterThanOrEqual" constant="60" id="K8b-yb-qKj"/>
                             </constraints>
                             <fontDescription key="fontDescription" type="system" pointSize="11"/>
-                            <state key="normal">
+                            <state key="normal" title="DOWNLOAD">
                                 <color key="titleColor" systemColor="systemGrayColor"/>
                             </state>
                             <connections>
                                 <action selector="saveOrDeleteAsset:" destination="6jT-Ms-evs" eventType="touchUpInside" id="atT-WY-dPh"/>
-                            </connections>
-                        </button>
-                        <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="wordWrap" translatesAutoresizingMaskIntoConstraints="NO" id="KU1-KR-SmA" userLabel="Clear Console">
-                            <rect key="frame" x="655" y="8" width="60" height="26"/>
-                            <color key="backgroundColor" red="0.13333454729999999" green="0.13333117959999999" blue="0.13333344459999999" alpha="1" colorSpace="custom" customColorSpace="displayP3"/>
-                            <constraints>
-                                <constraint firstAttribute="height" relation="greaterThanOrEqual" constant="20" id="MTj-Z8-a5p"/>
-                                <constraint firstAttribute="width" relation="greaterThanOrEqual" constant="60" id="c1F-g8-Pq2"/>
-                            </constraints>
-                            <fontDescription key="fontDescription" name=".AppleSystemUIFont" family=".AppleSystemUIFont" pointSize="11"/>
-                            <state key="normal" title="CLEAR">
-                                <color key="titleColor" systemColor="systemGrayColor"/>
-                            </state>
-                            <connections>
-                                <action selector="clearConsoleText:" destination="6jT-Ms-evs" eventType="touchUpInside" id="SAg-2h-9Mk"/>
                             </connections>
                         </button>
                         <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="wordWrap" translatesAutoresizingMaskIntoConstraints="NO" id="cXa-lu-kTE" userLabel="Copy Console Text">
@@ -175,23 +164,106 @@
                                 <action selector="copyConsoleText:" destination="6jT-Ms-evs" eventType="touchUpInside" id="fhE-53-rwq"/>
                             </connections>
                         </button>
+                        <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="wordWrap" translatesAutoresizingMaskIntoConstraints="NO" id="KU1-KR-SmA" userLabel="Clear Console">
+                            <rect key="frame" x="655" y="8" width="60" height="26"/>
+                            <color key="backgroundColor" red="0.13333454729999999" green="0.13333117959999999" blue="0.13333344459999999" alpha="1" colorSpace="custom" customColorSpace="displayP3"/>
+                            <constraints>
+                                <constraint firstAttribute="height" relation="greaterThanOrEqual" constant="20" id="MTj-Z8-a5p"/>
+                                <constraint firstAttribute="width" relation="greaterThanOrEqual" constant="60" id="c1F-g8-Pq2"/>
+                            </constraints>
+                            <fontDescription key="fontDescription" name=".AppleSystemUIFont" family=".AppleSystemUIFont" pointSize="11"/>
+                            <state key="normal" title="CLEAR">
+                                <color key="titleColor" systemColor="systemGrayColor"/>
+                            </state>
+                            <connections>
+                                <action selector="clearConsoleText:" destination="6jT-Ms-evs" eventType="touchUpInside" id="SAg-2h-9Mk"/>
+                            </connections>
+                        </button>
+                        <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="wordWrap" translatesAutoresizingMaskIntoConstraints="NO" id="p4w-L4-PfE" userLabel="Show All Log Messages">
+                            <rect key="frame" x="655" y="260.5" width="63" height="23"/>
+                            <color key="backgroundColor" red="0.20804339650000001" green="0.207511425" blue="0.22745379809999999" alpha="1" colorSpace="custom" customColorSpace="displayP3"/>
+                            <constraints>
+                                <constraint firstAttribute="width" relation="greaterThanOrEqual" constant="63" id="U7e-Qx-Bdf"/>
+                                <constraint firstAttribute="height" relation="greaterThanOrEqual" constant="23" id="Xig-uH-0w8"/>
+                            </constraints>
+                            <fontDescription key="fontDescription" name=".AppleSystemUIFont" family=".AppleSystemUIFont" pointSize="9"/>
+                            <state key="normal" title="ALL LOGS">
+                                <color key="titleColor" systemColor="systemGrayColor"/>
+                            </state>
+                            <connections>
+                                <action selector="showAllLogMessages:" destination="6jT-Ms-evs" eventType="touchUpInside" id="Rbt-uB-DLd"/>
+                            </connections>
+                        </button>
+                        <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="wordWrap" translatesAutoresizingMaskIntoConstraints="NO" id="tbv-U8-RCs" userLabel="Show Download Log">
+                            <rect key="frame" x="655" y="291.5" width="63" height="23"/>
+                            <color key="backgroundColor" red="0.20804339650000001" green="0.207511425" blue="0.22745379809999999" alpha="1" colorSpace="custom" customColorSpace="displayP3"/>
+                            <constraints>
+                                <constraint firstAttribute="width" relation="greaterThanOrEqual" constant="63" id="SKp-Q5-iLE"/>
+                                <constraint firstAttribute="height" relation="greaterThanOrEqual" constant="23" id="Uz9-45-sCE"/>
+                            </constraints>
+                            <fontDescription key="fontDescription" name=".AppleSystemUIFont" family=".AppleSystemUIFont" pointSize="9"/>
+                            <state key="normal" title="DOWNLOAD">
+                                <color key="titleColor" systemColor="systemGrayColor"/>
+                            </state>
+                            <connections>
+                                <action selector="showDownloadLog:" destination="6jT-Ms-evs" eventType="touchUpInside" id="v6o-iE-Gts"/>
+                            </connections>
+                        </button>
+                        <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="wordWrap" translatesAutoresizingMaskIntoConstraints="NO" id="HNG-u0-HO9" userLabel="Show Key Delivery Log">
+                            <rect key="frame" x="655" y="322.5" width="63" height="23"/>
+                            <color key="backgroundColor" red="0.20804339650000001" green="0.207511425" blue="0.22745379809999999" alpha="1" colorSpace="custom" customColorSpace="displayP3"/>
+                            <constraints>
+                                <constraint firstAttribute="width" relation="greaterThanOrEqual" constant="63" id="a83-ea-0zt"/>
+                                <constraint firstAttribute="height" relation="greaterThanOrEqual" constant="23" id="xsj-jk-1qI"/>
+                            </constraints>
+                            <fontDescription key="fontDescription" name=".AppleSystemUIFont" family=".AppleSystemUIFont" pointSize="8"/>
+                            <state key="normal" title="KEY DELIVERY">
+                                <color key="titleColor" systemColor="systemGrayColor"/>
+                            </state>
+                            <connections>
+                                <action selector="showKeyDeliveryLog:" destination="6jT-Ms-evs" eventType="touchUpInside" id="c1N-8J-x6F"/>
+                            </connections>
+                        </button>
+                        <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="wordWrap" translatesAutoresizingMaskIntoConstraints="NO" id="cH6-fn-45w" userLabel="Show Playback Log">
+                            <rect key="frame" x="655" y="353.5" width="63" height="23"/>
+                            <color key="backgroundColor" red="0.20804339650000001" green="0.207511425" blue="0.22745379809999999" alpha="1" colorSpace="custom" customColorSpace="displayP3"/>
+                            <constraints>
+                                <constraint firstAttribute="height" relation="greaterThanOrEqual" constant="23" id="Kza-vn-L9U"/>
+                                <constraint firstAttribute="width" relation="greaterThanOrEqual" constant="63" id="Win-wE-s73"/>
+                            </constraints>
+                            <fontDescription key="fontDescription" name=".AppleSystemUIFont" family=".AppleSystemUIFont" pointSize="9"/>
+                            <state key="normal" title="PLAYBACK">
+                                <color key="titleColor" systemColor="systemGrayColor"/>
+                            </state>
+                            <connections>
+                                <action selector="showPlaybackLog:" destination="6jT-Ms-evs" eventType="touchUpInside" id="621-on-zI8"/>
+                            </connections>
+                        </button>
                     </subviews>
                     <viewLayoutGuide key="safeArea" id="6UM-33-qP3"/>
                     <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                     <constraints>
                         <constraint firstItem="9XJ-hN-bk9" firstAttribute="top" secondItem="6UM-33-qP3" secondAttribute="top" id="1TI-ay-9ds"/>
+                        <constraint firstItem="tbv-U8-RCs" firstAttribute="centerX" secondItem="HNG-u0-HO9" secondAttribute="centerX" id="9De-5c-ogB"/>
                         <constraint firstItem="KU1-KR-SmA" firstAttribute="leading" secondItem="cXa-lu-kTE" secondAttribute="trailing" constant="8" id="Afg-mh-kzJ"/>
                         <constraint firstItem="6UM-33-qP3" firstAttribute="bottom" secondItem="7Ak-IP-0Ir" secondAttribute="bottom" id="Bju-eA-J2B"/>
+                        <constraint firstItem="cH6-fn-45w" firstAttribute="top" secondItem="7Ak-IP-0Ir" secondAttribute="bottom" constant="-39.5" id="Bp8-ZL-J5F"/>
+                        <constraint firstItem="cH6-fn-45w" firstAttribute="leading" secondItem="7Ak-IP-0Ir" secondAttribute="trailing" constant="-68" id="K6D-kF-StL"/>
                         <constraint firstItem="7Ak-IP-0Ir" firstAttribute="centerY" secondItem="6UM-33-qP3" secondAttribute="centerY" id="RtE-Ic-nuq"/>
                         <constraint firstItem="KU1-KR-SmA" firstAttribute="top" secondItem="7Ak-IP-0Ir" secondAttribute="top" constant="8" id="Tnv-zd-dJ9"/>
                         <constraint firstItem="7Ak-IP-0Ir" firstAttribute="leading" secondItem="iME-PI-uMV" secondAttribute="trailing" constant="2" id="b38-iG-8mj"/>
                         <constraint firstItem="7Ak-IP-0Ir" firstAttribute="top" secondItem="6UM-33-qP3" secondAttribute="top" id="bRP-CW-lWw"/>
                         <constraint firstItem="KU1-KR-SmA" firstAttribute="trailing" secondItem="7Ak-IP-0Ir" secondAttribute="trailing" constant="-8" id="deD-7s-jYB"/>
+                        <constraint firstItem="HNG-u0-HO9" firstAttribute="top" secondItem="tbv-U8-RCs" secondAttribute="bottom" constant="8" id="gOy-zF-FzO"/>
                         <constraint firstItem="9XJ-hN-bk9" firstAttribute="leading" secondItem="iME-PI-uMV" secondAttribute="leading" id="h0J-zZ-Hab"/>
+                        <constraint firstItem="HNG-u0-HO9" firstAttribute="centerX" secondItem="cH6-fn-45w" secondAttribute="centerX" id="iNy-bp-Ht2"/>
                         <constraint firstItem="7Ak-IP-0Ir" firstAttribute="centerX" secondItem="6UM-33-qP3" secondAttribute="centerX" id="lhx-Ff-cAW"/>
+                        <constraint firstItem="tbv-U8-RCs" firstAttribute="top" secondItem="p4w-L4-PfE" secondAttribute="bottom" constant="8" id="n6B-RN-1Xj"/>
                         <constraint firstItem="iME-PI-uMV" firstAttribute="bottom" secondItem="7Ak-IP-0Ir" secondAttribute="bottom" id="ogG-4w-8Hf"/>
+                        <constraint firstItem="cH6-fn-45w" firstAttribute="top" secondItem="HNG-u0-HO9" secondAttribute="bottom" constant="8" id="r85-PT-D2V"/>
                         <constraint firstItem="7Ak-IP-0Ir" firstAttribute="leading" secondItem="9XJ-hN-bk9" secondAttribute="trailing" constant="2" id="sAp-bn-O23"/>
                         <constraint firstItem="cXa-lu-kTE" firstAttribute="leading" relation="greaterThanOrEqual" secondItem="7Ak-IP-0Ir" secondAttribute="leading" id="sK6-Dc-BxW"/>
+                        <constraint firstItem="p4w-L4-PfE" firstAttribute="centerX" secondItem="tbv-U8-RCs" secondAttribute="centerX" id="tiZ-YR-Ekw"/>
                         <constraint firstItem="cXa-lu-kTE" firstAttribute="top" secondItem="7Ak-IP-0Ir" secondAttribute="top" constant="8" id="xaB-X8-7RQ"/>
                     </constraints>
                 </view>

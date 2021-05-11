@@ -21,16 +21,17 @@ class PlayerViewController: UIViewController {
     @IBOutlet weak var clearConsoleButton: UIButton!
     @IBOutlet weak var copyConsoleButton: UIButton!
     @IBOutlet weak var saveDeleteAssetButton: UIButton!
-     
+    @IBOutlet weak var showAllMessagesButton: UIButton!
+    @IBOutlet weak var showDownloadMessagesButton: UIButton!
+    @IBOutlet weak var showKeyDeliveryMessagesButton: UIButton!
+    @IBOutlet weak var showPlaybackMessagesButton: UIButton!
+    
     // Current asset
     var asset: Asset!
     
     // Indicates whether player is opened to play protected asset
     var isProtectedPlayback: Bool = false
-    
-    // Initialization time, used to calculate console entry time
-    fileprivate let initTime = Date().toMillis()!
-        
+            
     // Last observed bitrate
     fileprivate var lastBitrate:Double = 0
     
@@ -49,12 +50,12 @@ class PlayerViewController: UIViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
         
-        writeToConsole("Initiating playback of: \(asset.name)")
+        writeToConsole("Initiating playback of: \(asset.name)", LogManager.LogMessageType.LogMessageTypePlayback)
 
         // Using downloaded asset, if exists
         if let downloadedAsset = downloader.downloadedAsset(withName: asset.name) {
-            writeToConsole("OFFLINE PLAYBACK")
-            writeToConsole("Using AVURLAsset from \(String(describing: downloadedAsset.urlAsset?.url)))")
+            writeToConsole("OFFLINE PLAYBACK", LogManager.LogMessageType.LogMessageTypePlayback)
+            writeToConsole("Using AVURLAsset from \(String(describing: downloadedAsset.urlAsset?.url)))", LogManager.LogMessageType.LogMessageTypePlayback)
             
             asset = downloadedAsset
         }
@@ -73,11 +74,11 @@ class PlayerViewController: UIViewController {
         
         prepareSaveDeleteAssetButton(forState: downloader.downloadStateOfAsset(asset: asset))
                 
-        writeToConsole("Initiating AVPlayer with AVPlayerItem")
+        writeToConsole("Initiating AVPlayer with AVPlayerItem", LogManager.LogMessageType.LogMessageTypePlayback)
         
         player = AVPlayer(playerItem: AVPlayerItem(asset: asset.urlAsset))
     
-        writeToConsole("AVPlayer Ready")
+        writeToConsole("AVPlayer Ready", LogManager.LogMessageType.LogMessageTypePlayback)
             
         // Observe player and playerItem states as well as NotificationCenter relevant notifications
         addObservers()
@@ -182,13 +183,13 @@ class PlayerViewController: UIViewController {
             // Switch over the status
             switch status {
             case .readyToPlay:
-                writeToConsole("Player item is ready to play")
+                writeToConsole("Player item is ready to play", LogManager.LogMessageType.LogMessageTypePlayback)
             case .failed:
-                writeToConsole("Player item failed error: \(String(describing: player?.currentItem?.error?.localizedDescription))\n Debug info: \(String(describing: player?.currentItem?.error.debugDescription))")
+                writeToConsole("Player item failed error: \(String(describing: player?.currentItem?.error?.localizedDescription))\n Debug info: \(String(describing: player?.currentItem?.error.debugDescription))", LogManager.LogMessageType.LogMessageTypePlayback)
             case .unknown:
-                writeToConsole("Player item is not yet ready")
+                writeToConsole("Player item is not yet ready", LogManager.LogMessageType.LogMessageTypePlayback)
             @unknown default:
-                writeToConsole("UNEXPECTED STATUS")
+                writeToConsole("UNEXPECTED STATUS", LogManager.LogMessageType.LogMessageTypePlayback)
             }
         }
 
@@ -206,13 +207,13 @@ class PlayerViewController: UIViewController {
             // Switch over the status
             switch status {
             case .readyToPlay:
-               writeToConsole("Player is ready to play AVPlayerItem instances")
+               writeToConsole("Player is ready to play AVPlayerItem instances", LogManager.LogMessageType.LogMessageTypePlayback)
             case .failed:
-               writeToConsole("Player can no longer play AVPlayerItem instances because of an error: \(String(describing: player?.error?.localizedDescription))\n Debug info: \(String(describing: player?.error.debugDescription))")
+               writeToConsole("Player can no longer play AVPlayerItem instances because of an error: \(String(describing: player?.error?.localizedDescription))\n Debug info: \(String(describing: player?.error.debugDescription))", LogManager.LogMessageType.LogMessageTypePlayback)
             case .unknown:
-               writeToConsole("Player is not yet ready")
+               writeToConsole("Player is not yet ready", LogManager.LogMessageType.LogMessageTypePlayback)
             @unknown default:
-               writeToConsole("UNEXPECTED STATUS")
+               writeToConsole("UNEXPECTED STATUS", LogManager.LogMessageType.LogMessageTypePlayback)
             }
         }
         
@@ -231,9 +232,9 @@ class PlayerViewController: UIViewController {
             }
             
             if currentItem.isPlaybackBufferEmpty {
-                writeToConsole("Data buffer used for playback is empty. Playback will stall or end ")
+                writeToConsole("Data buffer used for playback is empty. Playback will stall or end", LogManager.LogMessageType.LogMessageTypePlayback)
             } else {
-                writeToConsole("Data buffer used for playback is not empty anymore")
+                writeToConsole("Data buffer used for playback is not empty anymore", LogManager.LogMessageType.LogMessageTypePlayback)
             }
         }
         
@@ -249,9 +250,9 @@ class PlayerViewController: UIViewController {
             }
             
             if currentItem.isPlaybackBufferFull {
-                writeToConsole("Data buffer used for playback is full")
+                writeToConsole("Data buffer used for playback is full", LogManager.LogMessageType.LogMessageTypePlayback)
             } else {
-                writeToConsole("Data buffer used for playback is not full anymore")
+                writeToConsole("Data buffer used for playback is not full anymore", LogManager.LogMessageType.LogMessageTypePlayback)
             }
         }
         
@@ -269,24 +270,24 @@ class PlayerViewController: UIViewController {
             }
             
             if currentItem.isPlaybackLikelyToKeepUp {
-                writeToConsole("Playback will likely to keep up")
+                writeToConsole("Playback will likely to keep up", LogManager.LogMessageType.LogMessageTypePlayback)
                 
                 if isStalling {
                     isStalling = false
                     let stallDurationMs: Int64 = Date().toMillis()! - stallBeginTime
-                    writeToConsole("Stall took \(stallDurationMs) ms")
+                    writeToConsole("Stall took \(stallDurationMs) ms", LogManager.LogMessageType.LogMessageTypePlayback)
                 }
                 
             } else {
-                writeToConsole("Playback will likey to fail")
+                writeToConsole("Playback will likey to fail", LogManager.LogMessageType.LogMessageTypePlayback)
             }
         }
         
         if keyPath == #keyPath(player.isOutputObscuredDueToInsufficientExternalProtection) {
             if player!.isOutputObscuredDueToInsufficientExternalProtection {
-                writeToConsole("Output is being obscured because current device configuration does not meet the requirements for protecting the item")
+                writeToConsole("Output is being obscured because current device configuration does not meet the requirements for protecting the item", LogManager.LogMessageType.LogMessageTypePlayback)
             } else {
-                writeToConsole("OK. Device configuration meets the requirements for protecting the item")
+                writeToConsole("OK. Device configuration meets the requirements for protecting the item", LogManager.LogMessageType.LogMessageTypePlayback)
             }
         }
     }
@@ -296,13 +297,13 @@ class PlayerViewController: UIViewController {
     @objc func itemFailedToPlayToEndTime(_ notification: Notification) {
         let error:Error? = notification.userInfo!["AVPlayerItemFailedToPlayToEndTimeErrorKey"] as? Error
         
-        writeToConsole("Item failed to play to the end. Error: \(String(describing:error?.localizedDescription)), error: \(String(describing: error))")
+        writeToConsole("Item failed to play to the end. Error: \(String(describing:error?.localizedDescription)), error: \(String(describing: error))", LogManager.LogMessageType.LogMessageTypePlayback)
     }
     
     // Item has played to its end time
     // [LOGGING]
     @objc func itemDidPlayToEndTime(_ notification: Notification) {
-        writeToConsole("Item has played to its end time")
+        writeToConsole("Item has played to its end time", LogManager.LogMessageType.LogMessageTypePlayback)
     }
     
     // Media did not arrive in time to continue playback
@@ -312,7 +313,7 @@ class PlayerViewController: UIViewController {
         // Used to calculate time delta of the stall which is printed to the Console
         stallBeginTime = Date().toMillis()!
         
-        writeToConsole("Stall occured. Media did not arrive in time to continue playback")
+        writeToConsole("Stall occured. Media did not arrive in time to continue playback", LogManager.LogMessageType.LogMessageTypePlayback)
     }
     
     // A new access log entry has been added
@@ -325,7 +326,7 @@ class PlayerViewController: UIViewController {
         }
         
         if lastEvent.indicatedBitrate != lastBitrate {
-            writeToConsole("Bitrate changed to \(bytesToHumanReadable(bytes: lastEvent.indicatedBitrate))")
+            writeToConsole("Bitrate changed to \(bytesToHumanReadable(bytes: lastEvent.indicatedBitrate))", LogManager.LogMessageType.LogMessageTypePlayback)
         }
 
         writeToConsole("""
@@ -345,7 +346,7 @@ class PlayerViewController: UIViewController {
             NUMBER OF STALLS: \(lastEvent.numberOfStalls) \n \
             NUMBER OF TIMES DOWNLOADING SEGMENTS TOOK TOO LONG: \(lastEvent.downloadOverdue) \n \
             TOTAL DURATION OF DOWNLOADED SEGMENTS: \(lastEvent.segmentsDownloadedDuration)
-        """)
+        """, LogManager.LogMessageType.LogMessageTypePlayback)
     }
     
     // A new error log entry has been added
@@ -366,19 +367,24 @@ class PlayerViewController: UIViewController {
             ERROR DOMAIN: \(String(describing: lastEvent.errorDomain)) \n \
             ERROR COMMENT: \(String(describing: lastEvent.errorComment)) \n \
             PLAYBACK SESSION ID: \(String(describing: lastEvent.playbackSessionID))
-        """)
+        """, LogManager.LogMessageType.LogMessageTypePlayback)
     }
     
     // A media selection group changed its selected option
     // [LOGGING]
     @objc func mediaSelectionDidChange(_ notification: Notification) {
-        writeToConsole("A media selection group changed its selected option")
+        writeToConsole("A media selection group changed its selected option", LogManager.LogMessageType.LogMessageTypePlayback)
     }
     
     // Begin with stream download process after .ContentKeyDelegateHasAvailablePersistableContentKey notification is received
     @objc func handleContentKeyDelegateHasAvailablePersistableContentKey(notification: Notification) {
-        writeToConsole("Persistable Content Key is available")
+        writeToConsole("Persistable Content Key is now available", LogManager.LogMessageType.LogMessageTypeKeyDelivery)
  
+//        guard let assetName = notification.userInfo?["name"] as? String,
+//            let asset = ContentKeyManager.pendingContentKeyRequests.removeValue(forKey: assetName) else {
+//            return
+//        }
+        
         // Initiate download if not already downloaded
         if downloader.downloadStateOfAsset(asset: asset) != Asset.DownloadState.downloadedAndSavedToDevice && ContentKeyManager.sharedManager.downloadRequestedByUser {
             downloadStream()
@@ -392,7 +398,7 @@ class PlayerViewController: UIViewController {
         guard let message = notification.userInfo!["message"] as? String else {
             return
         }
-        writeToConsole(message)
+        writeToConsole(message, LogManager.LogMessageType.LogMessageTypeKeyDelivery)
     }
     
     // Reacting to asset download state changes
@@ -402,7 +408,7 @@ class PlayerViewController: UIViewController {
             guard let downloadStateRawValue = notification.userInfo![Asset.Keys.downloadState] as? String,
                   let downloadState = Asset.DownloadState(rawValue: downloadStateRawValue)
                 else {
-                    print("Download state missing")
+                    self.writeToConsole("Download state missing", LogManager.LogMessageType.LogMessageTypeDownload)
                     return
             }
                     
@@ -413,12 +419,12 @@ class PlayerViewController: UIViewController {
                     // Showing which media selection is being downloaded
                     if let downloadSelection = notification.userInfo?[Asset.Keys.downloadSelectionDisplayName] as? String {
                         downloadSelectionDisplayName  = downloadSelection
-                        self.writeToConsole("DOWNLOADING \(String(describing: downloadSelectionDisplayName))")
+                        self.writeToConsole("DOWNLOADING \(String(describing: downloadSelectionDisplayName))", LogManager.LogMessageType.LogMessageTypeDownload)
                     }
                 case .downloadedAndSavedToDevice:
-                    self.writeToConsole("FINISHED DOWNLOADING")
+                    self.writeToConsole("FINISHED DOWNLOADING", LogManager.LogMessageType.LogMessageTypeDownload)
                 case .notDownloaded:
-                    self.writeToConsole("ASSET NOT DOWNLOADED")
+                    self.writeToConsole("ASSET NOT DOWNLOADED", LogManager.LogMessageType.LogMessageTypeDownload)
             }
             
             self.prepareSaveDeleteAssetButton(forState: downloadState)
@@ -447,34 +453,20 @@ class PlayerViewController: UIViewController {
                 
         let humanReadableProgress = Double(round(1000 * progress) / 10)
         
-        writeToConsole("DOWNLOADING PROGRESS of \(assetName) : \(humanReadableProgress)%")
+        writeToConsole("DOWNLOADING PROGRESS of \(assetName) : \(humanReadableProgress)%", LogManager.LogMessageType.LogMessageTypeDownload)
     }
     
     func downloadStream() {
-        writeToConsole("Initiating stream download")
+        writeToConsole("Initiating stream download", LogManager.LogMessageType.LogMessageTypeDownload)
         downloader.download(asset: asset)
     }
 
     // MARK: Console
     
     // Prints message to the Console view.
-    // Also showing the amount of time in ms it took relatively to PlayerViewContorller's init time.
-    // Dublicates output to Xcode debug console.
     // [LOGGING]
-    func writeToConsole(_ message: String) {
-        DispatchQueue.main.async {
-            let timeDeltaMs: Int64 = Date().toMillis()! - self.initTime
-            
-            let dateFormmater = DateFormatter()
-            dateFormmater.timeZone = TimeZone(identifier: "UTC")
-            dateFormmater.dateFormat = "yyyy-MM-dd HH:mm:ss.SSS'Z'"
-            
-            let dateString = dateFormmater.string(from: Date())
-            
-            self.consoleTextView.text = NSString(format: "%@%@%dms (%@) %@\n", self.consoleTextView.text,  !self.consoleTextView.text.isEmpty ? "\n" : "", timeDeltaMs, dateString,  message) as String
-            
-            print("CONSOLE OUTPUT: \(message)")
-        }
+    func writeToConsole(_ message: String, _ messageType: LogManager.LogMessageType = LogManager.LogMessageType.LogMessageTypeAll) {
+        LogManager.sharedManager.writeToTextView(self.consoleTextView, message, messageType)
     }
 
     // Toggles the Console visibility
@@ -485,6 +477,10 @@ class PlayerViewController: UIViewController {
         consoleTextView.isHidden = hide
         copyConsoleButton.isHidden = hide
         clearConsoleButton.isHidden = hide
+        showAllMessagesButton.isHidden = hide
+        showDownloadMessagesButton.isHidden = hide
+        showKeyDeliveryMessagesButton.isHidden = hide
+        showPlaybackMessagesButton.isHidden = hide
     }
     
     @IBAction func saveOrDeleteAsset(_ sender: Any) {
@@ -514,19 +510,19 @@ class PlayerViewController: UIViewController {
                 }
             case .downloading :
                 if isProtectedPlayback {
-                    writeToConsole("Cancelling download of \(String(describing: asset.name))")
+                    writeToConsole("Cancelling download of \(String(describing: asset.name))", LogManager.LogMessageType.LogMessageTypeDownload)
                           
                     // Remove Content Key from the device
-                    ContentKeyManager.sharedManager.deletePeristableContentKey(withAssetName: asset.name)
+                    ContentKeyManager.sharedManager.deleteAllPeristableContentKeys(forAsset: asset)
                 }
                 // Cancel current asset downloading process
                 downloader.cancelDownloadOfAsset(asset: asset)
             case .downloadedAndSavedToDevice:
                 if isProtectedPlayback {
-                    writeToConsole("Deleting download of \(String(describing: asset.name))")
+                    writeToConsole("Deleting download of \(String(describing: asset.name))", LogManager.LogMessageType.LogMessageTypeDownload)
                     
                     // Remove Content Key from the device
-                    ContentKeyManager.sharedManager.deletePeristableContentKey(withAssetName: asset.name)
+                    ContentKeyManager.sharedManager.deleteAllPeristableContentKeys(forAsset: asset)
                 }
                 // Remove downloaded stream from the device
                 downloader.deleteDownloadedAsset(asset: asset)
@@ -543,10 +539,35 @@ class PlayerViewController: UIViewController {
     // Cleans the Console
     // [LOGGING]
     @IBAction func clearConsoleText(_ sender: Any) {
-        consoleTextView.text = ""
+        LogManager.sharedManager.clear()
     }
     
+    // Shows all messages in the Console
+    // [LOGGING]
+    @IBAction func showAllLogMessages(_ sender: Any) {
+        LogManager.sharedManager.swithLogLevel(LogManager.LogManagerLevel.LogManagerLevelAll)
+    }
+    
+    // Shows only playback related messages in the Console
+    // [LOGGING]
+    @IBAction func showPlaybackLog(_ sender: Any) {
+        LogManager.sharedManager.swithLogLevel(LogManager.LogManagerLevel.LogManagerLevelPlayback)
+    }
+    
+    // Shows only key delivery messages in the Console
+    // [LOGGING]
+    @IBAction func showKeyDeliveryLog(_ sender: Any) {
+        LogManager.sharedManager.swithLogLevel(LogManager.LogManagerLevel.LogManagerLevelKeyDelivery)
+    }
+    
+    // Shows only downloading related messages in the Console
+    // [LOGGING]
+    @IBAction func showDownloadLog(_ sender: Any) {
+        LogManager.sharedManager.swithLogLevel(LogManager.LogManagerLevel.LogManagerLevelDownload)
+    }
+        
     deinit {
+        LogManager.sharedManager.clear()
         NotificationCenter.default.removeObserver(self)
     }
 }

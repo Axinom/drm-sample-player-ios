@@ -14,12 +14,13 @@ class Asset {
     
     var name: String
     var url: URL!
-    var contentKeyId: String?
+    var contentKeyIdList: [String]?
     var urlAsset: AVURLAsset!
     
     init(name: String, url: URL) {
         self.name = name
         self.url = url
+        self.contentKeyIdList = [String]()
         
         print("Creating Asset with url: \(url)) name: \(name)")
         
