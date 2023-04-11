@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		E4DDE9FA29C8BBC4009D1275 /* ConsoleOverlayView.swift in Sources */ = {isa = PBXBuildFile; fileRef = E4DDE9F929C8BBC4009D1275 /* ConsoleOverlayView.swift */; };
 		E60C651C25F8F243004441A7 /* LogManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = E60C651B25F8F243004441A7 /* LogManager.swift */; };
 		E6A64D8725669B540058D02E /* Notification.Name.swift in Sources */ = {isa = PBXBuildFile; fileRef = E63B6A3E2541B6DC0091B371 /* Notification.Name.swift */; };
 		E6A64D8825669B540058D02E /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = E6F43AA6247D0501000C1CF9 /* AppDelegate.swift */; };
@@ -25,6 +26,7 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
+		E4DDE9F929C8BBC4009D1275 /* ConsoleOverlayView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ConsoleOverlayView.swift; sourceTree = "<group>"; };
 		E60C651B25F8F243004441A7 /* LogManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LogManager.swift; sourceTree = "<group>"; };
 		E63B6A392541B6D20091B371 /* AssetListTableViewCell.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = AssetListTableViewCell.swift; path = "AxinomDrmSamplePlayer/Assets Table/AssetListTableViewCell.swift"; sourceTree = SOURCE_ROOT; };
 		E63B6A3A2541B6D20091B371 /* AssetsViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = AssetsViewController.swift; path = "AxinomDrmSamplePlayer/Assets Table/AssetsViewController.swift"; sourceTree = SOURCE_ROOT; };
@@ -108,6 +110,7 @@
 			isa = PBXGroup;
 			children = (
 				E6E3F366253D8907006D38CD /* Asset.swift */,
+				E4DDE9F929C8BBC4009D1275 /* ConsoleOverlayView.swift */,
 				E6580913247F9123007F0771 /* PlayerViewController.swift */,
 				E6F43AA6247D0501000C1CF9 /* AppDelegate.swift */,
 				E6F43AA8247D0501000C1CF9 /* SceneDelegate.swift */,
@@ -194,6 +197,7 @@
 				E6A64D8A25669B540058D02E /* ContentKeyManager.swift in Sources */,
 				E6A64D8B25669B540058D02E /* Asset.swift in Sources */,
 				E6A64D8C25669B540058D02E /* AssetDownloader.swift in Sources */,
+				E4DDE9FA29C8BBC4009D1275 /* ConsoleOverlayView.swift in Sources */,
 				E6A64D8D25669B540058D02E /* SceneDelegate.swift in Sources */,
 				E6A64D8E25669B540058D02E /* AssetListTableViewCell.swift in Sources */,
 				E6A64D8F25669B540058D02E /* PlayerViewController.swift in Sources */,

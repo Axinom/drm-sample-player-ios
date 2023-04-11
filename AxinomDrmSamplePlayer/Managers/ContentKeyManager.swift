@@ -28,6 +28,9 @@ class ContentKeyManager: NSObject, AVContentKeySessionDelegate {
     // Content Key session
     var contentKeySession: AVContentKeySession!
     
+    // Content Key request
+    var contentKeyRequest: AVContentKeyRequest!
+    
     // Indicates that user requested download action
     var downloadRequestedByUser: Bool = false
     
@@ -89,7 +92,7 @@ class ContentKeyManager: NSObject, AVContentKeySessionDelegate {
     */
     func contentKeySession(_ session: AVContentKeySession, didProvide keyRequest: AVContentKeyRequest) {
         self.postToConsole("Content is encrypted. Initiating key request")
-        
+        contentKeyRequest = keyRequest
         handleOnlineContentKeyRequest(keyRequest: keyRequest)
     }
     

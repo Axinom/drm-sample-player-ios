@@ -6,7 +6,7 @@ You can use the example code provided in this sample to build your own applicati
  
 Another major usage of this sample raises from its capability of tracing the steps performed during the playback of protected and non-protected assets such as FairPlay content protection related activity, DRM license acquisition from Axinom DRM licensing server, as well as ```AVPlayerItem``` and ```AVPlayer``` statuses, buffer events, and Access log and Error log events associated with ```AVPlayerItem```.
  
-Sample application's Player View has a togglable Console overlay, that allows user to observe verbose logging of these steps. Console output can be cleared and copied to the device clipboard.
+Sample application's Player View has a togglable Console overlay, that allows user to observe verbose logging of these steps. Console output can be cleared and copied to the device clipboard. Player buttons behind the Console overlay can be clicked only when the Console overlay is hidden.
  
 ## Using the Sample application
  
@@ -126,6 +126,13 @@ keyRequest.processContentKeyResponse(keyResponse)
 ```
 Finally, AVFoundation can start decryption and playback.
  
+<br>
+
+### License renewal
+
+```AVContentKeyRequest``` provided by ```AVContentKeySessionDelegate``` (step 1 in the online playback and key delivery scenario) is saved and used for renewing the license using
+```renewExpiringResponseData(for contentKeyRequest: AVContentKeyRequest)``` function. For renewing the license in the application, "Renew" button on Player View Controller has to be clicked.
+
 <br>
  
 ### Key delivery for offline use
@@ -287,8 +294,27 @@ Find out more about `URLSessionTaskDelegate`:
 https://developer.apple.com/documentation/foundation/urlsessiontaskdelegate
 
 ### Downloaded content folder structure
- 
-The following screenshot shows how the downloaded file structure looks like on an iOS device. Downloaded Fairplay keys are stored inside _keys folder. Audio and video content is located under .movpkg folder. Video fragments are saved into a subfolder which name starts with "0" and the audio fragments folder name starts with "1". The third folder named "Data" contains the HLS master playlist. Finally, boot.xml describes the .movpkg folder content.
+
+Downloaded content can be obtained and accessed as follows:
+1. Open Devices and Simulators screen in Xcode (Window -> Devices and Simulators).
+2. From the list of connected devices, choose the one that has Axinom DRM Sample
+Player installed.
+3. In the opened window under installed apps section, select Axinom DRM Sample
+Player and then choose Download Container option accessible from the App
+container actions menu indicated by three period signs at the bottom).
+4. To view the downloaded application container, right click on it and select
+Show Package Contents. While doing that, make sure that hidden files are shown
+in Finder (shortcut: "Command + Shift + period" to toggle hiding/showing hidden
+files) because some files or folders might not be visible otherwise.
+
+The following screenshot shows how the downloaded file structure looks like on
+an iOS device. Downloaded Fairplay keys are stored inside .keys folder. Audio
+and video content is located under .movpkg folder. Contents of that can also be
+viewed by right clicking on it and selecting the Show Package Contents option.
+Video fragments are saved into a subfolder which name starts with "0" and the
+audio fragments folder name starts with "1". The third folder named "Data"
+contains the HLS master playlist. Finally, boot.xml describes the .movpkg
+folder content.
 
 ![DownloadedFileStructure](DownloadedFileStructure.png "DownloadedFileStructure")
 
@@ -328,5 +354,3 @@ Xcode 11.0 or later; iOS 13.0 SDK or later
 ### Runtime
  
 iOS 13.1 or later.
- 
-

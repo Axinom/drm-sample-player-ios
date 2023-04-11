@@ -16,11 +16,12 @@ import UIKit
 import AVKit
 
 class PlayerViewController: UIViewController {
-    @IBOutlet weak var consoleOverlayView: UIView!
+    @IBOutlet weak var consoleOverlayView: ConsoleOverlayView!
     @IBOutlet weak var consoleTextView: UITextView!
     @IBOutlet weak var clearConsoleButton: UIButton!
     @IBOutlet weak var copyConsoleButton: UIButton!
     @IBOutlet weak var saveDeleteAssetButton: UIButton!
+    @IBOutlet weak var renewLicenseButton: UIButton!
     @IBOutlet weak var showAllMessagesButton: UIButton!
     @IBOutlet weak var showDownloadMessagesButton: UIButton!
     @IBOutlet weak var showKeyDeliveryMessagesButton: UIButton!
@@ -526,6 +527,16 @@ class PlayerViewController: UIViewController {
                 }
                 // Remove downloaded stream from the device
                 downloader.deleteDownloadedAsset(asset: asset)
+        }
+    }
+    
+    // Renews the license
+    @IBAction func renewLicense(_ sender: Any) {
+        if (ContentKeyManager.sharedManager.contentKeySession != nil) {
+            NSLog("Trying to renew license")
+            ContentKeyManager.sharedManager.contentKeySession.renewExpiringResponseData(for: ContentKeyManager.sharedManager.contentKeyRequest)
+        } else {
+            NSLog("Can't renew license, Content Key Session does not exist")
         }
     }
     
