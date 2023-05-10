@@ -336,15 +336,6 @@ The following resources available on the Apple Developer website contain helpful
     * [WWDC 2017 - Session 514: Error Handling Best Practices for HTTP Live Streaming](https://developer.apple.com/videos/play/wwdc2017/514/)
  
 
-## Installing the sample application
- 
-The sample application can be downloaded from App Center by either navigating to the [website](https://install.appcenter.ms/orgs/ax/apps/axinom-drm-sample-player/distribution_groups/public) directly or by scanning this QR code with your device:
- 
-![QR](InstallQR.png "Install")
- 
-**NOTE:**
-In order for the app to be available for use, you'll need to trust the developer's certificate. From your phone’s home screen, tap Settings > General > Profiles or Profiles & Device Management. Under the Enterprise App heading, you see will see a profile for the developer. Tap the name of the Axinom GmbH profile and then confirm you trust them. You can now launch the app.
- 
 ## Requirements
  
 ### Build
